@@ -4,7 +4,7 @@ export type RequestStatusType = 'idle' | 'loading' | 'succeeded' | 'failed' // 1
 
 const initialState = {
     status: 'loading' as RequestStatusType,
-    error: null as null | string // добавили новое свойство в редьюсер. error будет равна либо строке (в которой будет сообщение об ошибки) либо null, если ошибки не будет
+    error: 'loading' as null | string // добавили новое свойство в редьюсер. error будет равна либо строке (в которой будет сообщение об ошибки) либо null, если ошибки не будет
 }
 export type SetAppStatusType = ReturnType<typeof setAppStatusAC>
 export type SetAppErrorType = ReturnType<typeof setAppErrorAC>
