@@ -1,3 +1,5 @@
+// DAL уровень - уровень взаимодействия с бек єндом. Своеобразная прослойка
+
 import axios from 'axios'
 
 const settings = {
