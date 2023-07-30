@@ -5,7 +5,7 @@ import {Button, IconButton} from '@material-ui/core'
 import {Delete} from '@material-ui/icons'
 import {Task} from './Task/Task'
 import {TaskStatuses, TaskType} from '../../../api/todolists-api'
-import {FilterValuesType} from '../todolists-reducer'
+import {FilterValuesType, TodolistDomainType} from '../todolists-reducer'
 import {useDispatch} from 'react-redux'
 import {fetchTasksTC} from '../tasks-reducer'
 import {useAppDispatch} from "../../../app/store";
@@ -24,6 +24,7 @@ type PropsType = {
     removeTodolist: (id: string) => void
     changeTodolistTitle: (id: string, newTitle: string) => void
     filter: FilterValuesType
+    todolist: TodolistDomainType
 
 }
 
@@ -64,7 +65,7 @@ export const Todolist = React.memo(function (props: PropsType) {
     // удаление тудулиста
     return <div>
         <h3><EditableSpan value={props.title} onChange={changeTodolistTitle}/>
-            <IconButton onClick={removeTodolist} disabled={props.entityStatus === 'loading'}>{/* 15 если статус loading, то кнопка дизеблится */}
+            <IconButton onClick={removeTodolist} disabled={props.entityStatus === 'loading'} >
                 <Delete/>
             </IconButton>
         </h3>

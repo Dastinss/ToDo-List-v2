@@ -21,9 +21,9 @@ export const todolistsReducer = (state: Array<TodolistDomainType> = initialState
         case 'CHANGE-TODOLIST-FILTER':
             return state.map(tl => tl.id === action.id ? {...tl, filter: action.filter} : tl)
         case 'SET-TODOLISTS':
-            return action.todolists.map(tl => ({...tl, filter: 'all', entityStatus: 'loading'})) // бежим мапом и добавляем фильтр
+            return action.todolists.map(tl => ({...tl, filter: 'all', entityStatus: 'idle'})) // бежим мапом и добавляем фильтр
         case 'CHANGE-TODOLIST-ENTITY-STATUS':
-            return state.map((tl) => action.id === tl.id ? {...tl, entityStatus: tl.entityStatus} : tl) //
+            return state.map((tl) => tl.id === action.id ? {...tl, entityStatus: action.status} : tl) //
         default:
             return state
     }
@@ -46,10 +46,10 @@ export const setTodolistsAC = (todolists: Array<TodolistType>) => ({
     type: 'SET-TODOLISTS',
     todolists
 } as const) //14 АС который будет устанавливать наше значение в стейте
-export const changeTodolistEntityStatusAC = (id: string, entityStatus: RequestStatusType) => ({
+export const changeTodolistEntityStatusAC = (id: string, status: RequestStatusType) => ({
     type: 'CHANGE-TODOLIST-ENTITY-STATUS',
     id,
-    entityStatus
+    status
 } as const)
 
 
