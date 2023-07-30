@@ -2,7 +2,7 @@ import {AddTodolistActionType, RemoveTodolistActionType, SetTodolistsActionType}
 import {TaskPriorities, TaskStatuses, TaskType, todolistsAPI, UpdateTaskModelType} from '../../api/todolists-api'
 import {Dispatch} from 'redux'
 import {AppRootStateType} from '../../app/store'
-import {setAppStatusAC, SetAppStatusType} from "../../app/app-reducer";
+import {setAppErrorAC, SetAppErrorType, setAppStatusAC, SetAppStatusType} from "../../app/app-reducer";
 
 const initialState: TasksStateType = {}
 
@@ -72,10 +72,19 @@ export const addTaskTC = (title: string, todolistId: string) => (dispatch: Dispa
     dispatch(setAppStatusAC('loading'))// 15 старт ассинхронного запроса по отражению todoLists
     todolistsAPI.createTask(todolistId, title)
         .then(res => {
-            const task = res.data.data.item
-            const action = addTaskAC(task)
-            dispatch(action)
-            dispatch(setAppStatusAC('succeeded'))// 15 старт ассинхронного запроса по отражению todoLists
+            if (res.data.resultCode === 0) {
+                const task = res.data.data.item
+                const action = addTaskAC(task)
+                dispatch(action)
+            } else {
+                if (res.data.messages.length) {
+                    dispatch(setAppErrorAC(res.data.messages[0])) // 15 добаваили, что если есть ошибка, то необходимо вывести сообщение об ошибке с нулевым индексом т.е. первую ошибку
+                } else {
+                    dispatch(setAppErrorAC('Some Error occurred')) // 15 добаваили если случится ошибка без описания
+                }
+            }
+            dispatch(setAppStatusAC('idle'))// 15 окончание ассинхронного запроса по отражению tasks - перестает показывать крутилку
+
         })
 }
 export const updateTaskTC = (taskId: string, domainModel: UpdateDomainTaskModelType, todolistId: string) =>
@@ -129,3 +138,4 @@ type ActionsType =
     | SetTodolistsActionType
     | ReturnType<typeof setTasksAC>
     | SetAppStatusType // 15 добавил новый АС
+    | SetAppErrorType

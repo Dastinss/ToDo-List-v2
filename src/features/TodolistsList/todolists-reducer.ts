@@ -15,13 +15,15 @@ export const todolistsReducer = (state: Array<TodolistDomainType> = initialState
         case 'REMOVE-TODOLIST':
             return state.filter(tl => tl.id !== action.id)
         case 'ADD-TODOLIST':
-            return [{...action.todolist, filter: 'all'}, ...state]
+            return [{...action.todolist, filter: 'all', entityStatus: 'idle'}, ...state]
         case 'CHANGE-TODOLIST-TITLE':
             return state.map(tl => tl.id === action.id ? {...tl, title: action.title} : tl)
         case 'CHANGE-TODOLIST-FILTER':
             return state.map(tl => tl.id === action.id ? {...tl, filter: action.filter} : tl)
         case 'SET-TODOLISTS':
-            return action.todolists.map(tl => ({...tl, filter: 'all'}))
+            return action.todolists.map(tl => ({...tl, filter: 'all', entityStatus: 'loading'})) // бежим мапом и добавляем фильтр
+        case 'CHANGE-TODOLIST-ENTITY-STATUS':
+            return state.map((tl) => action.id === tl.id ? {...tl, entityStatus: tl.entityStatus} : tl) //
         default:
             return state
     }
@@ -40,7 +42,16 @@ export const changeTodolistFilterAC = (id: string, filter: FilterValuesType) => 
     id,
     filter
 } as const)
-export const setTodolistsAC = (todolists: Array<TodolistType>) => ({type: 'SET-TODOLISTS', todolists} as const)
+export const setTodolistsAC = (todolists: Array<TodolistType>) => ({
+    type: 'SET-TODOLISTS',
+    todolists
+} as const) //14 АС который будет устанавливать наше значение в стейте
+export const changeTodolistEntityStatusAC = (id: string, entityStatus: RequestStatusType) => ({
+    type: 'CHANGE-TODOLIST-ENTITY-STATUS',
+    id,
+    entityStatus
+} as const)
+
 
 // thunks
 export const fetchTodolistsTC = () => { // 14 создали Thunk для общения этого редьюсера как BLL с DAL уровнем
@@ -56,6 +67,7 @@ export const fetchTodolistsTC = () => { // 14 создали Thunk для общ
 export const removeTodolistTC = (todolistId: string) => {
     return (dispatch: Dispatch<ActionsType>) => {
         dispatch(setAppStatusAC('loading'))// 15 старт ассинхронного запроса по отражению todoLists
+        dispatch(changeTodolistEntityStatusAC (todolistId, 'loading'))
         todolistsAPI.deleteTodolist(todolistId)
             .then((res) => {
                 dispatch(removeTodolistAC(todolistId))
@@ -68,8 +80,16 @@ export const addTodolistTC = (title: string) => {
         dispatch(setAppStatusAC('loading'))// 15 старт ассинхронного запроса по отражению todoLists
         todolistsAPI.createTodolist(title)
             .then((res) => {
-                dispatch(addTodolistAC(res.data.data.item))
-                dispatch(setAppStatusAC('succeeded'))// 15 старт ассинхронного запроса по отражению todoLists
+                if (res.data.resultCode === 0) {
+                    dispatch(addTodolistAC(res.data.data.item))
+                } else {
+                    if (res.data.messages.length) {
+                        dispatch(setAppErrorAC(res.data.messages[0]))
+                    } else {
+                        dispatch(setAppErrorAC('Some Error occurred'))
+                    }
+                }
+                dispatch(setAppStatusAC('idle')) // окончание ассинхронного запроса по отражению todoLists - перестает показывать крутилку
             })
     }
 }
@@ -93,10 +113,12 @@ type ActionsType = // список актионов, которые приним
     | AddTodolistActionType
     | ReturnType<typeof changeTodolistTitleAC>
     | ReturnType<typeof changeTodolistFilterAC>
+    | ReturnType<typeof changeTodolistEntityStatusAC> // 15 добавили тип нового "блокировочного" актиона
     | SetTodolistsActionType
     | SetAppStatusType // 15 добавил новый АС
     | SetAppErrorType
 export type FilterValuesType = 'all' | 'active' | 'completed';
 export type TodolistDomainType = TodolistType & {
     filter: FilterValuesType
+    entityStatus: RequestStatusType // 15 добавили свойство тудулиста которое будем прменять для опередаления того, совершено ли какоето действие с этим объектом
 }
