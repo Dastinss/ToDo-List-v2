@@ -63,13 +63,14 @@ export const Todolist = React.memo(function (props: PropsType) {
     }
 
     // удаление тудулиста
+    // 15 добавили дизейбл кнопок при нескольких нажатиях disabled={props.entityStatus === 'loading'}
     return <div>
         <h3><EditableSpan value={props.title} onChange={changeTodolistTitle}/>
             <IconButton onClick={removeTodolist} disabled={props.entityStatus === 'loading'} >
                 <Delete/>
             </IconButton>
         </h3>
-        <AddItemForm addItem={addTask}/>
+        <AddItemForm addItem={addTask} disabled={props.entityStatus === 'loading'}/> {/*// 15 добавили для необходимочсти задизейблить формочку добавления новой таски, если с тудулистом что-то происходит*/}
         <div>
             {
                 tasksForTodolist.map(t => <Task key={t.id} task={t} todolistId={props.id}

@@ -86,6 +86,10 @@ export const addTaskTC = (title: string, todolistId: string) => (dispatch: Dispa
             dispatch(setAppStatusAC('idle'))// 15 окончание ассинхронного запроса по отражению tasks - перестает показывать крутилку
 
         })
+        .catch((error) => {
+            dispatch(setAppStatusAC('failed'))
+            dispatch(setAppErrorAC(error.message))
+        })
 }
 export const updateTaskTC = (taskId: string, domainModel: UpdateDomainTaskModelType, todolistId: string) =>
     (dispatch: Dispatch<ActionsType>, getState: () => AppRootStateType) => {
@@ -110,9 +114,22 @@ export const updateTaskTC = (taskId: string, domainModel: UpdateDomainTaskModelT
 
         todolistsAPI.updateTask(todolistId, taskId, apiModel)
             .then(res => {
-                const action = updateTaskAC(taskId, domainModel, todolistId)
-                dispatch(action)
-                dispatch(setAppStatusAC('succeeded'))// 15 старт ассинхронного запроса по отражению todoLists
+                    if (res.data.resultCode === 0) {
+                        const action = updateTaskAC(taskId, domainModel, todolistId)
+                        dispatch(action)
+                        dispatch(setAppStatusAC('succeeded'))// 15 старт ассинхронного запроса по отражению todoLists
+                    } else {
+                        if (res.data.messages.length){
+                            dispatch(setAppErrorAC(res.data.messages[0]))
+                        } else {
+                            dispatch(setAppErrorAC('Some Error occurred'))
+                        }
+                    }
+                    dispatch(setAppStatusAC('idle'))
+                })
+            .catch((error) => { // 15 отлавливаем ошибку по невозможности удаления в случае отсутствия NetWork
+                dispatch(setAppStatusAC('failed'))// убираем загрузку
+                dispatch(setAppErrorAC(error.message)) // добавляем описание ошибки
             })
     }
 

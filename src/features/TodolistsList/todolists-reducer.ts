@@ -64,14 +64,34 @@ export const fetchTodolistsTC = () => { // 14 создали Thunk для общ
             })
     }
 }
+
+// enum ResultCode { // применякм, чтобы не лезть на сервер новым людям и не вникать, что за коды ошибок, их отсутвия и пр
+//     ok=0,
+//     Error,
+//     capcha
+// }
+
 export const removeTodolistTC = (todolistId: string) => {
     return (dispatch: Dispatch<ActionsType>) => {
         dispatch(setAppStatusAC('loading'))// 15 старт ассинхронного запроса по отражению todoLists
-        dispatch(changeTodolistEntityStatusAC (todolistId, 'loading'))
+        dispatch(changeTodolistEntityStatusAC(todolistId, 'loading'))
         todolistsAPI.deleteTodolist(todolistId)
             .then((res) => {
-                dispatch(removeTodolistAC(todolistId))
-                dispatch(setAppStatusAC('succeeded'))// 15 старт ассинхронного запроса по отражению todoLists
+                if (res.data.resultCode === 0) {
+                    dispatch(removeTodolistAC(todolistId))
+                    dispatch(setAppStatusAC('succeeded'))// 15 старт ассинхронного запроса по отражению todoLists
+                } else {
+                    if (res.data.messages.length) {
+                        dispatch(setAppErrorAC(res.data.messages[0])) // 15 добаваили, что если есть ошибка, то необходимо вывести сообщение об ошибке с нулевым индексом т.е. первую ошибку
+                    } else {
+                        dispatch(setAppErrorAC('Some Error occurred')) // 15 добаваили хардкод, если случится ошибка без описания
+                    }
+                }
+            })
+            .catch((error) => { // 15 отлавливаем ошибку по невозможности удаления в случае отсутствия NetWork
+                dispatch(setAppStatusAC('failed')) // убираем загрузку
+                dispatch(changeTodolistEntityStatusAC(todolistId, 'failed')) // убираем дизебл
+                dispatch(setAppErrorAC(error.message)) // добавляем описание ошибки
             })
     }
 }
