@@ -4,10 +4,10 @@ export type RequestStatusType = 'idle' | 'loading' | 'succeeded' | 'failed' // 1
 
 const initialState = {
     status: 'loading' as RequestStatusType,
-    error: 'loading' as null | string // добавили новое свойство в редьюсер. error будет равна либо строке (в которой будет сообщение об ошибки) либо null, если ошибки не будет
+    error: null as null | string // добавили новое свойство в редьюсер. error будет равна либо строке (в которой будет сообщение об ошибки) либо null, если ошибки не будет
 }
-export type SetAppStatusType = ReturnType<typeof setAppStatusAC>
-export type SetAppErrorType = ReturnType<typeof setAppErrorAC>
+export type SetAppStatusActionType = ReturnType<typeof setAppStatusAC>
+export type SetAppErrorActionType = ReturnType<typeof setAppErrorAC>
 
 type InitialStateType = typeof initialState
 
@@ -27,4 +27,4 @@ export const appReducer = (state: InitialStateType = initialState, action: Actio
 export const setAppStatusAC = (status: RequestStatusType) => ({type: 'APP/SET-STATUS', status} as const)
 export const setAppErrorAC = (error: null | string) => ({type: 'APP/SET-ERROR', error} as const)
 
-type ActionsType = SetAppStatusType | SetAppErrorType
+type ActionsType = SetAppStatusActionType | SetAppErrorActionType

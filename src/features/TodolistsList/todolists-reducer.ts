@@ -3,10 +3,11 @@ import {Dispatch} from 'redux'
 import {
     RequestStatusType,
     setAppErrorAC,
-    SetAppErrorType,
+    SetAppErrorActionType,
     setAppStatusAC,
-    SetAppStatusType
+    SetAppStatusActionType
 } from "../../app/app-reducer";
+import {handleServerAppError, handleServerNetworkError} from "../../utils/error-utils";
 
 const initialState: Array<TodolistDomainType> = []
 
@@ -81,17 +82,19 @@ export const removeTodolistTC = (todolistId: string) => {
                     dispatch(removeTodolistAC(todolistId))
                     dispatch(setAppStatusAC('succeeded'))// 15 старт ассинхронного запроса по отражению todoLists
                 } else {
-                    if (res.data.messages.length) {
-                        dispatch(setAppErrorAC(res.data.messages[0])) // 15 добаваили, что если есть ошибка, то необходимо вывести сообщение об ошибке с нулевым индексом т.е. первую ошибку
-                    } else {
-                        dispatch(setAppErrorAC('Some Error occurred')) // 15 добаваили хардкод, если случится ошибка без описания
-                    }
+                    // if (res.data.messages.length) {
+                    //     dispatch(setAppErrorAC(res.data.messages[0])) // 15 добаваили, что если есть ошибка, то необходимо вывести сообщение об ошибке с нулевым индексом т.е. первую ошибку
+                    // } else {
+                    //     dispatch(setAppErrorAC('Some Error occurred')) // 15 добаваили хардкод, если случится ошибка без описания
+                    // }
+                    handleServerAppError(res.data, dispatch) // 15 заменил все выще на вынесенную в отдельную компоненту ф-цию handleServerAppError
                 }
             })
             .catch((error) => { // 15 отлавливаем ошибку по невозможности удаления в случае отсутствия NetWork
-                dispatch(setAppStatusAC('failed')) // убираем загрузку
                 dispatch(changeTodolistEntityStatusAC(todolistId, 'failed')) // убираем дизебл
-                dispatch(setAppErrorAC(error.message)) // добавляем описание ошибки
+                // dispatch(setAppErrorAC(error.message)) // добавляем описание ошибки - замениил на вынесенную в отдельную компоненту ф-цию handleServerNetworkError
+                // dispatch(setAppStatusAC('failed')) // убираем загрузку- замениил на вынесенную в отдельную компоненту ф-цию handleServerNetworkError
+                handleServerNetworkError(dispatch, error);
             })
     }
 }
@@ -102,14 +105,13 @@ export const addTodolistTC = (title: string) => {
             .then((res) => {
                 if (res.data.resultCode === 0) {
                     dispatch(addTodolistAC(res.data.data.item))
+                    dispatch(setAppStatusAC('succeeded'))
                 } else {
-                    if (res.data.messages.length) {
-                        dispatch(setAppErrorAC(res.data.messages[0]))
-                    } else {
-                        dispatch(setAppErrorAC('Some Error occurred'))
-                    }
+                    handleServerAppError(res.data, dispatch)
                 }
-                dispatch(setAppStatusAC('idle')) // окончание ассинхронного запроса по отражению todoLists - перестает показывать крутилку
+            })
+            .catch((error) => {
+                handleServerAppError(error, dispatch)
             })
     }
 }
@@ -135,8 +137,8 @@ type ActionsType = // список актионов, которые приним
     | ReturnType<typeof changeTodolistFilterAC>
     | ReturnType<typeof changeTodolistEntityStatusAC> // 15 добавили тип нового "блокировочного" актиона
     | SetTodolistsActionType
-    | SetAppStatusType // 15 добавил новый АС
-    | SetAppErrorType
+    | SetAppStatusActionType // 15 добавил новый АС
+    | SetAppErrorActionType
 export type FilterValuesType = 'all' | 'active' | 'completed';
 export type TodolistDomainType = TodolistType & {
     filter: FilterValuesType

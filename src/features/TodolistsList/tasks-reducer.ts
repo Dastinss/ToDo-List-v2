@@ -2,7 +2,9 @@ import {AddTodolistActionType, RemoveTodolistActionType, SetTodolistsActionType}
 import {TaskPriorities, TaskStatuses, TaskType, todolistsAPI, UpdateTaskModelType} from '../../api/todolists-api'
 import {Dispatch} from 'redux'
 import {AppRootStateType} from '../../app/store'
-import {setAppErrorAC, SetAppErrorType, setAppStatusAC, SetAppStatusType} from "../../app/app-reducer";
+import {setAppErrorAC, SetAppErrorActionType, setAppStatusAC, SetAppStatusActionType} from "../../app/app-reducer";
+import {handleServerAppError, handleServerNetworkError} from "../../utils/error-utils";
+import {AxiosError} from "axios";
 
 const initialState: TasksStateType = {}
 
@@ -77,18 +79,20 @@ export const addTaskTC = (title: string, todolistId: string) => (dispatch: Dispa
                 const action = addTaskAC(task)
                 dispatch(action)
             } else {
-                if (res.data.messages.length) {
-                    dispatch(setAppErrorAC(res.data.messages[0])) // 15 добаваили, что если есть ошибка, то необходимо вывести сообщение об ошибке с нулевым индексом т.е. первую ошибку
-                } else {
-                    dispatch(setAppErrorAC('Some Error occurred')) // 15 добаваили если случится ошибка без описания
-                }
+                // if (res.data.messages.length) {
+                //     dispatch(setAppErrorAC(res.data.messages[0])) // 15 добаваили, что если есть ошибка, то необходимо вывести сообщение об ошибке с нулевым индексом т.е. первую ошибку
+                // } else {
+                //     dispatch(setAppErrorAC('Some Error occurred')) // 15 добаваили хардкод, если случится ошибка без описания
+                // }
+                handleServerAppError(res.data, dispatch) // 15 заменил все выще на вынесенную в отдельную компоненту ф-цию handleServerAppError
             }
             dispatch(setAppStatusAC('idle'))// 15 окончание ассинхронного запроса по отражению tasks - перестает показывать крутилку
 
         })
         .catch((error) => {
-            dispatch(setAppStatusAC('failed'))
-            dispatch(setAppErrorAC(error.message))
+            // dispatch(setAppErrorAC(error.message)) // добавляем описание ошибки - замениил на вынесенную в отдельную компоненту ф-цию handleServerNetworkError
+            // dispatch(setAppStatusAC('failed')) // убираем загрузку- замениил на вынесенную в отдельную компоненту ф-цию handleServerNetworkError
+            handleServerNetworkError(dispatch,error);
         })
 }
 export const updateTaskTC = (taskId: string, domainModel: UpdateDomainTaskModelType, todolistId: string) =>
@@ -119,17 +123,19 @@ export const updateTaskTC = (taskId: string, domainModel: UpdateDomainTaskModelT
                         dispatch(action)
                         dispatch(setAppStatusAC('succeeded'))// 15 старт ассинхронного запроса по отражению todoLists
                     } else {
-                        if (res.data.messages.length){
-                            dispatch(setAppErrorAC(res.data.messages[0]))
-                        } else {
-                            dispatch(setAppErrorAC('Some Error occurred'))
-                        }
+                        // if (res.data.messages.length) {
+                        //     dispatch(setAppErrorAC(res.data.messages[0])) // 15 добаваили, что если есть ошибка, то необходимо вывести сообщение об ошибке с нулевым индексом т.е. первую ошибку
+                        // } else {
+                        //     dispatch(setAppErrorAC('Some Error occurred')) // 15 добаваили хардкод, если случится ошибка без описания
+                        // }
+                        handleServerAppError(res.data, dispatch) // 15 заменил все выще на вынесенную в отдельную компоненту ф-цию handleServerAppError
                     }
                     dispatch(setAppStatusAC('idle'))
                 })
-            .catch((error) => { // 15 отлавливаем ошибку по невозможности удаления в случае отсутствия NetWork
-                dispatch(setAppStatusAC('failed'))// убираем загрузку
-                dispatch(setAppErrorAC(error.message)) // добавляем описание ошибки
+            .catch((error: AxiosError ) => { // 15 отлавливаем ошибку по невозможности удаления в случае отсутствия NetWork
+                // dispatch(setAppErrorAC(error.message)) // добавляем описание ошибки - замениил на вынесенную в отдельную компоненту ф-цию handleServerNetworkError
+                // dispatch(setAppStatusAC('failed')) // убираем загрузку- замениил на вынесенную в отдельную компоненту ф-цию handleServerNetworkError
+                handleServerNetworkError(dispatch,error) // 15 вынесли блок диспатч в отдельную компоненту
             })
     }
 
@@ -154,5 +160,5 @@ type ActionsType =
     | RemoveTodolistActionType
     | SetTodolistsActionType
     | ReturnType<typeof setTasksAC>
-    | SetAppStatusType // 15 добавил новый АС
-    | SetAppErrorType
+    | SetAppStatusActionType // 15 добавил новый АС
+    | SetAppErrorActionType
