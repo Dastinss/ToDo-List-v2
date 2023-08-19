@@ -58,7 +58,7 @@ export const changeTodolistEntityStatusAC = (id: string, status: RequestStatusTy
 export const fetchTodolistsTC = () => { // 14 создали Thunk для общения этого редьюсера как BLL с DAL уровнем
     return (dispatch: Dispatch<ActionsType>) => { // в момент получения thunk у нас идет ПЕРВЫЙ ассинхронный запрос
         dispatch(setAppStatusAC('loading'))// 15 старт ассинхронного запроса по отражению todoLists
-        todolistsAPI.getTodolists() // 14 ассинхронный запрос на API Димыча мы из BLL дедаем запрос в DAL, что архитекрутрно правильно, поэтому И перенелсли эту логику в Thunk т.е. в todolist-reduser из UI т.е. из TodoLists
+        todolistsAPI.getTodolists() // 14 ассинхронный запрос на API Димыча мы из BLL делаем запрос в DAL, что архитекрутрно правильно, поэтому И перенелсли эту логику в Thunk т.е. в todolist-reduser из UI т.е. из TodoLists
             .then((res) => {
                 dispatch(setTodolistsAC(res.data))
                 dispatch(setAppStatusAC('succeeded'))// 15 финиш ассинхронного запроса по отражению todoLists
