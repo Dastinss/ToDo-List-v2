@@ -26,19 +26,27 @@ export const Login = () => {
         },
         validate: (values) => {
             const errors: FormikErrorType = {};
+
             if (!values.email) {
                 errors.email = 'Required';
             } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
                 errors.email = 'Invalid email address';
             }
+
+            if (!values.password) {
+                errors.password = 'Required';
+            } else if (values.password.length < 3) {
+                errors.password = 'Password should be more than 3 symbols';
+            }
             return errors;
         },
         onSubmit: values => {
             alert(JSON.stringify(values, null, 2));
+            formik.resetForm() // 16 после того как мы нажали enter и попали в onsubmit зачистим значения введенные в поля
         },
     });
 
-    console.log(formik.errors)
+    console.log(formik.touched)
 
     return <Grid container justifyContent={'center'}>
         <Grid item justifyContent={'center'}>
@@ -58,31 +66,36 @@ export const Login = () => {
                         <TextField
                             label='Email'
                             margin="normal"
-                            name='email'
-                            onChange={formik.handleChange}
-                            value={formik.values.email}
+                            // name='email' // 16 заменил на ОДНУ строчку с диструктуризацией
+                            // onChange={formik.handleChange} // 16 заменил на ОДНУ строчку с диструктуризацией
+                            // onBlur={formik.handleBlur} // 16 заменил на ОДНУ строчку с диструктуризацией
+                            // value={formik.values.email} // 16 заменил на ОДНУ строчку с диструктуризацией
+                            {...formik.getFieldProps('email')} // 16 заменил ОДНОЙ строчкой с диструктуризацией все выше закоменченное - ОСОБЕННОСТЬ formik.getFieldProps
                         />
 
-                        {formik.errors.email ? <div style={{color: 'red'}}>{formik.errors.email}</div> : null}
+                        {formik.touched.email && formik.errors.email ? <div style={{color: 'red'}}>{formik.errors.email}</div> : null}
 
                         <TextField
                             type='password'
                             label='Password'
                             margin='normal'
-                            name='password'
-                            onChange={formik.handleChange}
-                            value={formik.values.password}
+                            // name='password'
+                            // onChange={formik.handleChange}
+                            // onBlur={formik.handleBlur}
+                            // value={formik.values.password}
+                            {...formik.getFieldProps('password')} // 16 заменил ОДНОЙ строчкой с диструктуризацией все выше закоменченное - ОСОБЕННОСТЬ formik.getFieldProps
                         />
 
-                        {formik.errors.password ? <div style={{color: 'red'}}>{formik.errors.password}</div> : null}
+                        {formik.touched.password && formik.errors.password ? <div style={{color: 'red'}}>{formik.errors.password}</div> : null}
 
                         <FormControlLabel
                             label={'Remember me'}
                             control={
                                 <Checkbox
-                                    name={'rememberMe'}
-                                    onChange={formik.handleChange}
-                                    checked={formik.values.rememberMe}
+                                    checked={formik.values.rememberMe} // 16 после того как мы нажали enter и попали в onsubmit, зачистим галочку в чек боксе remember Me
+                                    // name={'rememberMe'}
+                                    // onChange={formik.handleChange}
+                                    {...formik.getFieldProps('rememberMe')} // 16 заменил ОДНОЙ строчкой с диструктуризацией все выше закоменченное - ОСОБЕННОСТЬ formik.getFieldProps
                                 />}
                         />
                         <Button type={'submit'} variant={'contained'} color={'primary'}>

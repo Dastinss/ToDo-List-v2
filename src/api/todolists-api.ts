@@ -1,6 +1,7 @@
 // DAL уровень - уровень взаимодействия с бек єндом. Своеобразная прослойка
 
 import axios from 'axios'
+import {authReducer} from "../features/Login/auth-reducer";
 
 const settings = {
     withCredentials: true,
@@ -44,6 +45,17 @@ export const todolistsAPI = {
         return instance.put<ResponseType<TaskType>>(`todo-lists/${todolistId}/tasks/${taskId}`, model);
     }
 }
+
+export const  authAPI = {
+    login () {
+        authReducer(email: string, password: string) {
+            const promise = instance.post<ResponseType<{ item: LoginParamsType }>>('auth/login', {email: email, password: password});
+            return promise;
+        }
+    }
+}
+
+
 
 // types
 export type TodolistType = {
@@ -94,4 +106,11 @@ type GetTasksResponse = {
     error: string | null
     totalCount: number
     items: TaskType[]
+}
+
+export type LoginParamsType = {
+    email: string
+    password: string
+    rememberMe: boolean
+    captcha: boolean
 }
