@@ -10,6 +10,8 @@ import FormLabel from '@mui/material/FormLabel';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import {useFormik} from "formik";
+import {loginTC} from "./auth-reducer";
+import {useAppDispatch} from "../../app/store";
 
 type FormikErrorType = {
     email?: string
@@ -18,6 +20,7 @@ type FormikErrorType = {
 }
 
 export const Login = () => {
+    const dispatch = useAppDispatch()
     const formik = useFormik({ // 16 добавиили строки из сайта формик https://formik.org/docs/tutorial
         initialValues: { // ключ зарезервированный внутри хука , это дефолтное состояние ,которое будет внутри себя хранить value
             email: '',
@@ -41,7 +44,8 @@ export const Login = () => {
             return errors;
         },
         onSubmit: values => {
-            alert(JSON.stringify(values, null, 2));
+            // alert(JSON.stringify(values, null, 2)); // 16 законектили "тренировочный алерт", и делаем запрос на сервер в виде санки ниже (с редюсера)
+            dispatch(loginTC(values)) // 16 добавили санку вместо тренировочного алерта
             formik.resetForm() // 16 после того как мы нажали enter и попали в onsubmit зачистим значения введенные в поля
         },
     });

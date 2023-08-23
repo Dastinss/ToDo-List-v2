@@ -1,5 +1,7 @@
-import { Dispatch } from 'redux'
-import { SetAppErrorActionType, setAppStatusAC, SetAppStatusActionType } from '../../app/app-reducer'
+import {Dispatch} from 'redux'
+import {SetAppErrorActionType, setAppStatusAC, SetAppStatusActionType} from '../../app/app-reducer'
+import {authAPI, LoginParamsType} from "../../api/todolists-api";
+import {handleServerAppError} from "../../utils/error-utils";
 
 const initialState = {
     isLoggedIn: false
@@ -19,8 +21,19 @@ export const setIsLoggedInAC = (value: boolean) =>
     ({type: 'login/SET-IS-LOGGED-IN', value} as const)
 
 // thunks
-export const loginTC = (data: any) => (dispatch: Dispatch<ActionsType>) => {
+export const loginTC = (data: LoginParamsType) => async (dispatch: Dispatch<ActionsType>) => {
     dispatch(setAppStatusAC('loading'))
+
+    try {
+        const res = await authAPI.login(data)
+        if (res.data.resultCode === 0) {
+            dispatch(setIsLoggedInAC(true))
+        } else {
+            handleServerAppError(res.data, dispatch)
+        }
+    } catch (err: any) {
+        handleServerAppError(err, dispatch)
+    }
 }
 
 // types
