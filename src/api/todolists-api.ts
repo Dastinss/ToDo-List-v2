@@ -47,13 +47,15 @@ export const todolistsAPI = {
 }
 
 export const authAPI = {
-    login (data: any) {
+    login (data: LoginParamsType) {
         // authReducer(email: string, password: string) {
         //     const promise = instance.post<ResponseType<{ item: LoginParamsType }>>('auth/login', {email: email, password: password});
         //     return promise;
         // }
-        return instance.post<AxiosResponse<ResponseType<{userId: number}>>>('auth/login', data)
-            .then(res => res.data)
+        return instance.post<ResponseType<{userId: number}>>('auth/login', data)
+            .then(res => {
+                return res.data
+            })
     }
 }
 

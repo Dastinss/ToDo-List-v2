@@ -26,10 +26,11 @@ export const loginTC = (data: LoginParamsType) => async (dispatch: Dispatch<Acti
 
     try {
         const res = await authAPI.login(data)
-        if (res.data.resultCode === 0) {
+        if (res.resultCode === 0) {
             dispatch(setIsLoggedInAC(true))
+            dispatch(setAppStatusAC('succeeded'))
         } else {
-            handleServerAppError(res.data, dispatch)
+            handleServerAppError(res, dispatch)
         }
     } catch (err: any) {
         handleServerAppError(err, dispatch)
