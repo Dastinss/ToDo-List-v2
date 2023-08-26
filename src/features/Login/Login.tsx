@@ -11,7 +11,9 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import {useFormik} from "formik";
 import {loginTC} from "./auth-reducer";
-import {useAppDispatch} from "../../app/store";
+import {AppRootStateType, useAppDispatch, useAppSelector} from "../../app/store";
+import {useSelector} from "react-redux";
+import {Navigate} from "react-router-dom";
 
 type FormikErrorType = {
     email?: string
@@ -21,6 +23,8 @@ type FormikErrorType = {
 
 export const Login = () => {
     const dispatch = useAppDispatch()
+    const isLoggedIn = useSelector<AppRootStateType>(state => state.auth.isLoggedIn)
+
     const formik = useFormik({ // 16 добавиили строки из сайта формик https://formik.org/docs/tutorial
         initialValues: { // ключ зарезервированный внутри хука , это дефолтное состояние ,которое будет внутри себя хранить value
             email: '',
@@ -50,7 +54,9 @@ export const Login = () => {
         },
     });
 
-    console.log(formik.touched)
+    if (isLoggedIn) {
+        return <Navigate to={'/'}/>
+    }
 
     return <Grid container justifyContent={'center'}>
         <Grid item justifyContent={'center'}>
@@ -77,7 +83,8 @@ export const Login = () => {
                             {...formik.getFieldProps('email')} // 16 заменил ОДНОЙ строчкой с диструктуризацией все выше закоменченное - ОСОБЕННОСТЬ formik.getFieldProps
                         />
 
-                        {formik.touched.email && formik.errors.email ? <div style={{color: 'red'}}>{formik.errors.email}</div> : null}
+                        {formik.touched.email && formik.errors.email ?
+                            <div style={{color: 'red'}}>{formik.errors.email}</div> : null}
 
                         <TextField
                             type='password'
@@ -90,7 +97,8 @@ export const Login = () => {
                             {...formik.getFieldProps('password')} // 16 заменил ОДНОЙ строчкой с диструктуризацией все выше закоменченное - ОСОБЕННОСТЬ formik.getFieldProps
                         />
 
-                        {formik.touched.password && formik.errors.password ? <div style={{color: 'red'}}>{formik.errors.password}</div> : null}
+                        {formik.touched.password && formik.errors.password ?
+                            <div style={{color: 'red'}}>{formik.errors.password}</div> : null}
 
                         <FormControlLabel
                             label={'Remember me'}
