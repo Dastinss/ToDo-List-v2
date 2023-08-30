@@ -25,8 +25,10 @@ export const TodolistsList: React.FC = () => {
     const isLoggedIn = useSelector<AppRootStateType>(state => state.auth.isLoggedIn)
 
     useEffect(() => {
-        const thunk = fetchTodolistsTC()
-        dispatch(thunk)
+        if (isLoggedIn) { // 16 Чтобы не было лишнего запроса на сервер  и даже не уходил запрос за тудулистами, т.к. это просто бессмысленно, добавим в useEffect еще одну проверку
+            const thunk = fetchTodolistsTC()
+            dispatch(thunk)
+        }
     }, [])
 
     const removeTask = useCallback(function (id: string, todolistId: string) {

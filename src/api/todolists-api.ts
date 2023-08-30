@@ -46,7 +46,7 @@ export const todolistsAPI = {
     }
 }
 
-export const authAPI = {
+export const authAPI = { // 16
     login (data: LoginParamsType) {
         // authReducer(email: string, password: string) {
         //     const promise = instance.post<ResponseType<{ item: LoginParamsType }>>('auth/login', {email: email, password: password});
@@ -56,10 +56,22 @@ export const authAPI = {
             .then(res => {
                 return res.data
             })
-    }
+    },
+
+    me () {
+        return instance.get<ResponseType<{userId: number}>>('auth/me')
+            .then(res => {
+                return res.data
+            })
+    },
+
+    logout () {
+        return instance.delete<ResponseType>('auth/login')
+            .then(res => {
+                return res.data
+            })
+    },
 }
-
-
 
 // types
 export type TodolistType = {
